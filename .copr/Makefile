@@ -7,7 +7,7 @@ srpm:	weston-srpm
 rpmbuild:
 	$(DNF) -y install rpmbuild
 
-weston-srpm:
+weston-srpm:	rpmbuild
 	$(RPMBUILD) -bs \
 		--define="_topdir `pwd`" \
 		--define="_sourcedir `pwd`" \
