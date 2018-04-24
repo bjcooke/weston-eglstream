@@ -1,5 +1,5 @@
 DNF=/usr/bin/dnf
-RPMBUILD=/usr/bin/rpmbuild
+RPMBUILD=/usr/bin/rpm-build
 
 
 srpm:	weston-srpm
