@@ -1,13 +1,13 @@
 DNF=/usr/bin/dnf
-RPMBUILD=/usr/bin/rpm-build
+RPMBUILD=/usr/bin/rpmbuild
 
 
 srpm:	weston-srpm
 
-rpmbuild:
-	$(DNF) -y install rpmbuild
+rpm-build:
+	$(DNF) -y install $@
 
-weston-srpm:	rpmbuild
+weston-srpm:	rpm-build
 	$(RPMBUILD) -bs \
 		--define="_topdir `pwd`" \
 		--define="_sourcedir `pwd`" \
