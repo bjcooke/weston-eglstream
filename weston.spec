@@ -2,7 +2,7 @@
 
 Name:           weston-eglstream
 Version:        3.0.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Reference compositor for Wayland.
 
 License:        BSD and CC-BY-SA
@@ -19,6 +19,7 @@ Patch5:         0006-compositor-drm-Add-support-for-EGLDevice-EGLOutput.patch
 Patch6:         0007-simple-egl-Do-not-set-EGL-up-until-XDG-setup-is-comp.patch
 Patch7:         0008-compositor-Process-stream-attach-requests-with-wl_eg.patch
 Patch8:         0009-Add-nvidia-release-notes-file.patch
+Patch9:         weston-3.0.0-vaapi-recorder-SIGUSR1.patch
 
 
 Conflicts:      weston
@@ -109,6 +110,7 @@ Common headers for weston
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 
 
 %build
@@ -180,6 +182,9 @@ find %{buildroot} -name \*.la -delete
 %{_libdir}/libweston-desktop-%{apiver}.so
 
 %changelog
+* Sat May 05 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 3.0.0-5
+- Block sigusr1 in vaapi recorder thread
+
 * Tue Apr 10 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 3.0.0-4
 - Apply patches in order to use EGLStreams instead of GBM
 
