@@ -2,7 +2,7 @@
 
 Name:           weston-eglstream
 Version:        3.0.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Reference compositor for Wayland.
 
 License:        BSD and CC-BY-SA
@@ -19,11 +19,13 @@ Patch5:         0006-compositor-drm-Add-support-for-EGLDevice-EGLOutput.patch
 Patch6:         0007-simple-egl-Do-not-set-EGL-up-until-XDG-setup-is-comp.patch
 Patch7:         0008-compositor-Process-stream-attach-requests-with-wl_eg.patch
 Patch8:         0009-Add-nvidia-release-notes-file.patch
-Patch9:         weston-3.0.0-vaapi-recorder-SIGUSR1.patch
+Patch9:         weston-3.0.0-sigusr1-handle.patch
+Patch10:        weston-3.0.0-link-posix-threads.patch
 
 
 Conflicts:      weston
 
+BuildRequires:	automake
 BuildRequires:  egl-wayland
 BuildRequires:  eglexternalplatform-devel
 BuildRequires:  glib2-devel
@@ -99,19 +101,7 @@ Requires:       weston-eglstream-libs%{?_isa} = %{version}-%{release}
 Common headers for weston
 
 %prep
-%setup -q -n weston-%{version}
-
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-
+%autosetup -p1 -n weston-%{version}
 
 %build
 %configure \
@@ -182,6 +172,9 @@ find %{buildroot} -name \*.la -delete
 %{_libdir}/libweston-desktop-%{apiver}.so
 
 %changelog
+* Mon May 07 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 3.0.0-6
+- Provide better handling of sigusr1
+
 * Sat May 05 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 3.0.0-5
 - Block sigusr1 in vaapi recorder thread
 

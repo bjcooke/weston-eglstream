@@ -1,0 +1,1526 @@
+diff -aur weston-3.0.0.orig/aclocal.m4 weston-3.0.0.new/aclocal.m4
+--- weston-3.0.0.orig/aclocal.m4	2017-08-08 14:57:10.000000000 -0400
++++ weston-3.0.0.new/aclocal.m4	2018-05-23 20:34:44.004738267 -0400
+@@ -1,6 +1,6 @@
+-# generated automatically by aclocal 1.15 -*- Autoconf -*-
++# generated automatically by aclocal 1.15.1 -*- Autoconf -*-
+ 
+-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
++# Copyright (C) 1996-2017 Free Software Foundation, Inc.
+ 
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -20,9 +20,9 @@
+ If you have problems, you may need to regenerate the build system entirely.
+ To do so, use the procedure documented by the package, typically 'autoreconf'.])])
+ 
+-dnl pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
+-dnl serial 11 (pkg-config-0.29.1)
+-dnl
++# pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
++# serial 11 (pkg-config-0.29.1)
++
+ dnl Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
+ dnl Copyright © 2012-2015 Dan Nicholson <dbn.lists@gmail.com>
+ dnl
+@@ -296,7 +296,75 @@
+ AS_VAR_IF([$1], [""], [$5], [$4])dnl
+ ])dnl PKG_CHECK_VAR
+ 
+-# Copyright (C) 2002-2014 Free Software Foundation, Inc.
++dnl PKG_WITH_MODULES(VARIABLE-PREFIX, MODULES,
++dnl   [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND],
++dnl   [DESCRIPTION], [DEFAULT])
++dnl ------------------------------------------
++dnl
++dnl Prepare a "--with-" configure option using the lowercase
++dnl [VARIABLE-PREFIX] name, merging the behaviour of AC_ARG_WITH and
++dnl PKG_CHECK_MODULES in a single macro.
++AC_DEFUN([PKG_WITH_MODULES],
++[
++m4_pushdef([with_arg], m4_tolower([$1]))
++
++m4_pushdef([description],
++           [m4_default([$5], [build with ]with_arg[ support])])
++
++m4_pushdef([def_arg], [m4_default([$6], [auto])])
++m4_pushdef([def_action_if_found], [AS_TR_SH([with_]with_arg)=yes])
++m4_pushdef([def_action_if_not_found], [AS_TR_SH([with_]with_arg)=no])
++
++m4_case(def_arg,
++            [yes],[m4_pushdef([with_without], [--without-]with_arg)],
++            [m4_pushdef([with_without],[--with-]with_arg)])
++
++AC_ARG_WITH(with_arg,
++     AS_HELP_STRING(with_without, description[ @<:@default=]def_arg[@:>@]),,
++    [AS_TR_SH([with_]with_arg)=def_arg])
++
++AS_CASE([$AS_TR_SH([with_]with_arg)],
++            [yes],[PKG_CHECK_MODULES([$1],[$2],$3,$4)],
++            [auto],[PKG_CHECK_MODULES([$1],[$2],
++                                        [m4_n([def_action_if_found]) $3],
++                                        [m4_n([def_action_if_not_found]) $4])])
++
++m4_popdef([with_arg])
++m4_popdef([description])
++m4_popdef([def_arg])
++
++])dnl PKG_WITH_MODULES
++
++dnl PKG_HAVE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
++dnl   [DESCRIPTION], [DEFAULT])
++dnl -----------------------------------------------
++dnl
++dnl Convenience macro to trigger AM_CONDITIONAL after PKG_WITH_MODULES
++dnl check._[VARIABLE-PREFIX] is exported as make variable.
++AC_DEFUN([PKG_HAVE_WITH_MODULES],
++[
++PKG_WITH_MODULES([$1],[$2],,,[$3],[$4])
++
++AM_CONDITIONAL([HAVE_][$1],
++               [test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"])
++])dnl PKG_HAVE_WITH_MODULES
++
++dnl PKG_HAVE_DEFINE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
++dnl   [DESCRIPTION], [DEFAULT])
++dnl ------------------------------------------------------
++dnl
++dnl Convenience macro to run AM_CONDITIONAL and AC_DEFINE after
++dnl PKG_WITH_MODULES check. HAVE_[VARIABLE-PREFIX] is exported as make
++dnl and preprocessor variable.
++AC_DEFUN([PKG_HAVE_DEFINE_WITH_MODULES],
++[
++PKG_HAVE_WITH_MODULES([$1],[$2],[$3],[$4])
++
++AS_IF([test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"],
++        [AC_DEFINE([HAVE_][$1], 1, [Enable ]m4_tolower([$1])[ support])])
++])dnl PKG_HAVE_DEFINE_WITH_MODULES
++
++# Copyright (C) 2002-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -311,7 +379,7 @@
+ [am__api_version='1.15'
+ dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
+ dnl require some minimum version.  Point them to the right macro.
+-m4_if([$1], [1.15], [],
++m4_if([$1], [1.15.1], [],
+       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
+ ])
+ 
+@@ -327,14 +395,14 @@
+ # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
+ # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
+ AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
+-[AM_AUTOMAKE_VERSION([1.15])dnl
++[AM_AUTOMAKE_VERSION([1.15.1])dnl
+ m4_ifndef([AC_AUTOCONF_VERSION],
+   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
+ _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
+ 
+ # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -386,7 +454,7 @@
+ 
+ # AM_CONDITIONAL                                            -*- Autoconf -*-
+ 
+-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
++# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -417,7 +485,7 @@
+ Usually this means the macro was only invoked conditionally.]])
+ fi])])
+ 
+-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
++# Copyright (C) 1999-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -608,7 +676,7 @@
+ 
+ # Generate code to set up dependency tracking.              -*- Autoconf -*-
+ 
+-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
++# Copyright (C) 1999-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -684,7 +752,7 @@
+ 
+ # Do all the work for Automake.                             -*- Autoconf -*-
+ 
+-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
++# Copyright (C) 1996-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -881,7 +949,7 @@
+ done
+ echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -902,7 +970,7 @@
+ fi
+ AC_SUBST([install_sh])])
+ 
+-# Copyright (C) 2003-2014 Free Software Foundation, Inc.
++# Copyright (C) 2003-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -923,7 +991,7 @@
+ 
+ # Check to see how 'make' treats includes.	            -*- Autoconf -*-
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -973,7 +1041,7 @@
+ 
+ # Fake the existence of programs that GNU maintainers use.  -*- Autoconf -*-
+ 
+-# Copyright (C) 1997-2014 Free Software Foundation, Inc.
++# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1012,7 +1080,7 @@
+ 
+ # Helper functions for option handling.                     -*- Autoconf -*-
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1041,7 +1109,7 @@
+ AC_DEFUN([_AM_IF_OPTION],
+ [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
+ 
+-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
++# Copyright (C) 1999-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1088,7 +1156,7 @@
+ # For backward compatibility.
+ AC_DEFUN_ONCE([AM_PROG_CC_C_O], [AC_REQUIRE([AC_PROG_CC])])
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1107,7 +1175,7 @@
+ 
+ # Check to make sure that the build environment is sane.    -*- Autoconf -*-
+ 
+-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
++# Copyright (C) 1996-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1188,7 +1256,7 @@
+ rm -f conftest.file
+ ])
+ 
+-# Copyright (C) 2009-2014 Free Software Foundation, Inc.
++# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1248,7 +1316,7 @@
+ _AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
+ ])
+ 
+-# Copyright (C) 2001-2014 Free Software Foundation, Inc.
++# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1276,7 +1344,7 @@
+ INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
+ AC_SUBST([INSTALL_STRIP_PROGRAM])])
+ 
+-# Copyright (C) 2006-2014 Free Software Foundation, Inc.
++# Copyright (C) 2006-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -1295,7 +1363,7 @@
+ 
+ # Check how to create a tarball.                            -*- Autoconf -*-
+ 
+-# Copyright (C) 2004-2014 Free Software Foundation, Inc.
++# Copyright (C) 2004-2017 Free Software Foundation, Inc.
+ #
+ # This file is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+Only in weston-3.0.0.new: autom4te.cache
+diff -aur weston-3.0.0.orig/build-aux/compile weston-3.0.0.new/build-aux/compile
+--- weston-3.0.0.orig/build-aux/compile	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/compile	2018-05-23 20:34:47.481665867 -0400
+@@ -1,9 +1,9 @@
+ #! /bin/sh
+ # Wrapper for compilers which do not understand '-c -o'.
+ 
+-scriptversion=2012-10-14.11; # UTC
++scriptversion=2016-01-11.22; # UTC
+ 
+-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
++# Copyright (C) 1999-2017 Free Software Foundation, Inc.
+ # Written by Tom Tromey <tromey@cygnus.com>.
+ #
+ # This program is free software; you can redistribute it and/or modify
+@@ -255,7 +255,8 @@
+     echo "compile $scriptversion"
+     exit $?
+     ;;
+-  cl | *[/\\]cl | cl.exe | *[/\\]cl.exe )
++  cl | *[/\\]cl | cl.exe | *[/\\]cl.exe | \
++  icl | *[/\\]icl | icl.exe | *[/\\]icl.exe )
+     func_cl_wrapper "$@"      # Doesn't return...
+     ;;
+ esac
+@@ -342,6 +343,6 @@
+ # eval: (add-hook 'write-file-hooks 'time-stamp)
+ # time-stamp-start: "scriptversion="
+ # time-stamp-format: "%:y-%02m-%02d.%02H"
+-# time-stamp-time-zone: "UTC"
++# time-stamp-time-zone: "UTC0"
+ # time-stamp-end: "; # UTC"
+ # End:
+diff -aur weston-3.0.0.orig/build-aux/config.guess weston-3.0.0.new/build-aux/config.guess
+--- weston-3.0.0.orig/build-aux/config.guess	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/config.guess	2018-05-23 20:34:47.485665784 -0400
+@@ -1,8 +1,8 @@
+ #! /bin/sh
+ # Attempt to guess a canonical system name.
+-#   Copyright 1992-2015 Free Software Foundation, Inc.
++#   Copyright 1992-2017 Free Software Foundation, Inc.
+ 
+-timestamp='2015-08-20'
++timestamp='2017-08-08'
+ 
+ # This file is free software; you can redistribute it and/or modify it
+ # under the terms of the GNU General Public License as published by
+@@ -27,7 +27,7 @@
+ # Originally written by Per Bothner; maintained since 2000 by Ben Elliston.
+ #
+ # You can get the latest version of this script from:
+-# http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD
++# http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess
+ #
+ # Please send patches to <config-patches@gnu.org>.
+ 
+@@ -50,7 +50,7 @@
+ GNU config.guess ($timestamp)
+ 
+ Originally written by Per Bothner.
+-Copyright 1992-2015 Free Software Foundation, Inc.
++Copyright 1992-2017 Free Software Foundation, Inc.
+ 
+ This is free software; see the source for copying conditions.  There is NO
+ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+@@ -186,9 +186,12 @@
+ 	    *) machine=${UNAME_MACHINE_ARCH}-unknown ;;
+ 	esac
+ 	# The Operating System including object format, if it has switched
+-	# to ELF recently, or will in the future.
++	# to ELF recently (or will in the future) and ABI.
+ 	case "${UNAME_MACHINE_ARCH}" in
+-	    arm*|earm*|i386|m68k|ns32k|sh3*|sparc|vax)
++	    earm*)
++		os=netbsdelf
++		;;
++	    arm*|i386|m68k|ns32k|sh3*|sparc|vax)
+ 		eval $set_cc_for_build
+ 		if echo __ELF__ | $CC_FOR_BUILD -E - 2>/dev/null \
+ 			| grep -q __ELF__
+@@ -237,6 +240,10 @@
+ 	UNAME_MACHINE_ARCH=`arch | sed 's/OpenBSD.//'`
+ 	echo ${UNAME_MACHINE_ARCH}-unknown-openbsd${UNAME_RELEASE}
+ 	exit ;;
++    *:LibertyBSD:*:*)
++	UNAME_MACHINE_ARCH=`arch | sed 's/^.*BSD\.//'`
++	echo ${UNAME_MACHINE_ARCH}-unknown-libertybsd${UNAME_RELEASE}
++	exit ;;
+     *:ekkoBSD:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-ekkobsd${UNAME_RELEASE}
+ 	exit ;;
+@@ -252,6 +259,9 @@
+     *:Sortix:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-sortix
+ 	exit ;;
++    *:Redox:*:*)
++	echo ${UNAME_MACHINE}-unknown-redox
++	exit ;;
+     alpha:OSF1:*:*)
+ 	case $UNAME_RELEASE in
+ 	*4.0)
+@@ -268,42 +278,42 @@
+ 	ALPHA_CPU_TYPE=`/usr/sbin/psrinfo -v | sed -n -e 's/^  The alpha \(.*\) processor.*$/\1/p' | head -n 1`
+ 	case "$ALPHA_CPU_TYPE" in
+ 	    "EV4 (21064)")
+-		UNAME_MACHINE="alpha" ;;
++		UNAME_MACHINE=alpha ;;
+ 	    "EV4.5 (21064)")
+-		UNAME_MACHINE="alpha" ;;
++		UNAME_MACHINE=alpha ;;
+ 	    "LCA4 (21066/21068)")
+-		UNAME_MACHINE="alpha" ;;
++		UNAME_MACHINE=alpha ;;
+ 	    "EV5 (21164)")
+-		UNAME_MACHINE="alphaev5" ;;
++		UNAME_MACHINE=alphaev5 ;;
+ 	    "EV5.6 (21164A)")
+-		UNAME_MACHINE="alphaev56" ;;
++		UNAME_MACHINE=alphaev56 ;;
+ 	    "EV5.6 (21164PC)")
+-		UNAME_MACHINE="alphapca56" ;;
++		UNAME_MACHINE=alphapca56 ;;
+ 	    "EV5.7 (21164PC)")
+-		UNAME_MACHINE="alphapca57" ;;
++		UNAME_MACHINE=alphapca57 ;;
+ 	    "EV6 (21264)")
+-		UNAME_MACHINE="alphaev6" ;;
++		UNAME_MACHINE=alphaev6 ;;
+ 	    "EV6.7 (21264A)")
+-		UNAME_MACHINE="alphaev67" ;;
++		UNAME_MACHINE=alphaev67 ;;
+ 	    "EV6.8CB (21264C)")
+-		UNAME_MACHINE="alphaev68" ;;
++		UNAME_MACHINE=alphaev68 ;;
+ 	    "EV6.8AL (21264B)")
+-		UNAME_MACHINE="alphaev68" ;;
++		UNAME_MACHINE=alphaev68 ;;
+ 	    "EV6.8CX (21264D)")
+-		UNAME_MACHINE="alphaev68" ;;
++		UNAME_MACHINE=alphaev68 ;;
+ 	    "EV6.9A (21264/EV69A)")
+-		UNAME_MACHINE="alphaev69" ;;
++		UNAME_MACHINE=alphaev69 ;;
+ 	    "EV7 (21364)")
+-		UNAME_MACHINE="alphaev7" ;;
++		UNAME_MACHINE=alphaev7 ;;
+ 	    "EV7.9 (21364A)")
+-		UNAME_MACHINE="alphaev79" ;;
++		UNAME_MACHINE=alphaev79 ;;
+ 	esac
+ 	# A Pn.n version is a patched version.
+ 	# A Vn.n version is a released version.
+ 	# A Tn.n version is a released field test version.
+ 	# A Xn.n version is an unreleased experimental baselevel.
+ 	# 1.2 uses "1.2" for uname -r.
+-	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[PVTX]//' | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'`
++	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[PVTX]//' | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz`
+ 	# Reset EXIT trap before exiting to avoid spurious non-zero exit code.
+ 	exitcode=$?
+ 	trap '' 0
+@@ -376,16 +386,16 @@
+ 	exit ;;
+     i86pc:SunOS:5.*:* | i86xen:SunOS:5.*:*)
+ 	eval $set_cc_for_build
+-	SUN_ARCH="i386"
++	SUN_ARCH=i386
+ 	# If there is a compiler, see if it is configured for 64-bit objects.
+ 	# Note that the Sun cc does not turn __LP64__ into 1 like gcc does.
+ 	# This test works for both compilers.
+-	if [ "$CC_FOR_BUILD" != 'no_compiler_found' ]; then
++	if [ "$CC_FOR_BUILD" != no_compiler_found ]; then
+ 	    if (echo '#ifdef __amd64'; echo IS_64BIT_ARCH; echo '#endif') | \
+-		(CCOPTS= $CC_FOR_BUILD -E - 2>/dev/null) | \
++		(CCOPTS="" $CC_FOR_BUILD -E - 2>/dev/null) | \
+ 		grep IS_64BIT_ARCH >/dev/null
+ 	    then
+-		SUN_ARCH="x86_64"
++		SUN_ARCH=x86_64
+ 	    fi
+ 	fi
+ 	echo ${SUN_ARCH}-pc-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+@@ -410,7 +420,7 @@
+ 	exit ;;
+     sun*:*:4.2BSD:*)
+ 	UNAME_RELEASE=`(sed 1q /etc/motd | awk '{print substr($5,1,3)}') 2>/dev/null`
+-	test "x${UNAME_RELEASE}" = "x" && UNAME_RELEASE=3
++	test "x${UNAME_RELEASE}" = x && UNAME_RELEASE=3
+ 	case "`/bin/arch`" in
+ 	    sun3)
+ 		echo m68k-sun-sunos${UNAME_RELEASE}
+@@ -635,13 +645,13 @@
+ 		    sc_cpu_version=`/usr/bin/getconf SC_CPU_VERSION 2>/dev/null`
+ 		    sc_kernel_bits=`/usr/bin/getconf SC_KERNEL_BITS 2>/dev/null`
+ 		    case "${sc_cpu_version}" in
+-		      523) HP_ARCH="hppa1.0" ;; # CPU_PA_RISC1_0
+-		      528) HP_ARCH="hppa1.1" ;; # CPU_PA_RISC1_1
++		      523) HP_ARCH=hppa1.0 ;; # CPU_PA_RISC1_0
++		      528) HP_ARCH=hppa1.1 ;; # CPU_PA_RISC1_1
+ 		      532)                      # CPU_PA_RISC2_0
+ 			case "${sc_kernel_bits}" in
+-			  32) HP_ARCH="hppa2.0n" ;;
+-			  64) HP_ARCH="hppa2.0w" ;;
+-			  '') HP_ARCH="hppa2.0" ;;   # HP-UX 10.20
++			  32) HP_ARCH=hppa2.0n ;;
++			  64) HP_ARCH=hppa2.0w ;;
++			  '') HP_ARCH=hppa2.0 ;;   # HP-UX 10.20
+ 			esac ;;
+ 		    esac
+ 		fi
+@@ -680,11 +690,11 @@
+ 		    exit (0);
+ 		}
+ EOF
+-		    (CCOPTS= $CC_FOR_BUILD -o $dummy $dummy.c 2>/dev/null) && HP_ARCH=`$dummy`
++		    (CCOPTS="" $CC_FOR_BUILD -o $dummy $dummy.c 2>/dev/null) && HP_ARCH=`$dummy`
+ 		    test -z "$HP_ARCH" && HP_ARCH=hppa
+ 		fi ;;
+ 	esac
+-	if [ ${HP_ARCH} = "hppa2.0w" ]
++	if [ ${HP_ARCH} = hppa2.0w ]
+ 	then
+ 	    eval $set_cc_for_build
+ 
+@@ -697,12 +707,12 @@
+ 	    # $ CC_FOR_BUILD="cc +DA2.0w" ./config.guess
+ 	    # => hppa64-hp-hpux11.23
+ 
+-	    if echo __LP64__ | (CCOPTS= $CC_FOR_BUILD -E - 2>/dev/null) |
++	    if echo __LP64__ | (CCOPTS="" $CC_FOR_BUILD -E - 2>/dev/null) |
+ 		grep -q __LP64__
+ 	    then
+-		HP_ARCH="hppa2.0w"
++		HP_ARCH=hppa2.0w
+ 	    else
+-		HP_ARCH="hppa64"
++		HP_ARCH=hppa64
+ 	    fi
+ 	fi
+ 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
+@@ -807,14 +817,14 @@
+ 	echo craynv-cray-unicosmp${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'
+ 	exit ;;
+     F30[01]:UNIX_System_V:*:* | F700:UNIX_System_V:*:*)
+-	FUJITSU_PROC=`uname -m | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'`
+-	FUJITSU_SYS=`uname -p | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz' | sed -e 's/\///'`
++	FUJITSU_PROC=`uname -m | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz`
++	FUJITSU_SYS=`uname -p | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz | sed -e 's/\///'`
+ 	FUJITSU_REL=`echo ${UNAME_RELEASE} | sed -e 's/ /_/'`
+ 	echo "${FUJITSU_PROC}-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
+ 	exit ;;
+     5000:UNIX_System_V:4.*:*)
+-	FUJITSU_SYS=`uname -p | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz' | sed -e 's/\///'`
+-	FUJITSU_REL=`echo ${UNAME_RELEASE} | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz' | sed -e 's/ /_/'`
++	FUJITSU_SYS=`uname -p | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz | sed -e 's/\///'`
++	FUJITSU_REL=`echo ${UNAME_RELEASE} | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz | sed -e 's/ /_/'`
+ 	echo "sparc-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
+ 	exit ;;
+     i*86:BSD/386:*:* | i*86:BSD/OS:*:* | *:Ascend\ Embedded/OS:*:*)
+@@ -830,10 +840,11 @@
+ 	UNAME_PROCESSOR=`/usr/bin/uname -p`
+ 	case ${UNAME_PROCESSOR} in
+ 	    amd64)
+-		echo x86_64-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'` ;;
+-	    *)
+-		echo ${UNAME_PROCESSOR}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'` ;;
++		UNAME_PROCESSOR=x86_64 ;;
++	    i386)
++		UNAME_PROCESSOR=i586 ;;
+ 	esac
++	echo ${UNAME_PROCESSOR}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
+ 	exit ;;
+     i*:CYGWIN*:*)
+ 	echo ${UNAME_MACHINE}-pc-cygwin
+@@ -896,7 +907,7 @@
+ 	exit ;;
+     *:GNU/*:*:*)
+ 	# other systems with GNU libc and userland
+-	echo ${UNAME_MACHINE}-unknown-`echo ${UNAME_SYSTEM} | sed 's,^[^/]*/,,' | tr '[A-Z]' '[a-z]'``echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`-${LIBC}
++	echo ${UNAME_MACHINE}-unknown-`echo ${UNAME_SYSTEM} | sed 's,^[^/]*/,,' | tr "[:upper:]" "[:lower:]"``echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`-${LIBC}
+ 	exit ;;
+     i*86:Minix:*:*)
+ 	echo ${UNAME_MACHINE}-pc-minix
+@@ -919,7 +930,7 @@
+ 	  EV68*) UNAME_MACHINE=alphaev68 ;;
+ 	esac
+ 	objdump --private-headers /bin/sh | grep -q ld.so.1
+-	if test "$?" = 0 ; then LIBC="gnulibc1" ; fi
++	if test "$?" = 0 ; then LIBC=gnulibc1 ; fi
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+     arc:Linux:*:* | arceb:Linux:*:*)
+@@ -965,6 +976,9 @@
+     ia64:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
++    k1om:Linux:*:*)
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
++	exit ;;
+     m32r*:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+@@ -990,6 +1004,9 @@
+ 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^CPU'`
+ 	test x"${CPU}" != x && { echo "${CPU}-unknown-linux-${LIBC}"; exit; }
+ 	;;
++    mips64el:Linux:*:*)
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
++	exit ;;
+     openrisc*:Linux:*:*)
+ 	echo or1k-unknown-linux-${LIBC}
+ 	exit ;;
+@@ -1022,6 +1039,9 @@
+     ppcle:Linux:*:*)
+ 	echo powerpcle-unknown-linux-${LIBC}
+ 	exit ;;
++    riscv32:Linux:*:* | riscv64:Linux:*:*)
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
++	exit ;;
+     s390:Linux:*:* | s390x:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-ibm-linux-${LIBC}
+ 	exit ;;
+@@ -1120,7 +1140,7 @@
+ 	# uname -m prints for DJGPP always 'pc', but it prints nothing about
+ 	# the processor, so we play safe by assuming i586.
+ 	# Note: whatever this is, it MUST be the same as what config.sub
+-	# prints for the "djgpp" host, or else GDB configury will decide that
++	# prints for the "djgpp" host, or else GDB configure will decide that
+ 	# this is a cross-build.
+ 	echo i586-pc-msdosdjgpp
+ 	exit ;;
+@@ -1269,6 +1289,9 @@
+     SX-8R:SUPER-UX:*:*)
+ 	echo sx8r-nec-superux${UNAME_RELEASE}
+ 	exit ;;
++    SX-ACE:SUPER-UX:*:*)
++	echo sxace-nec-superux${UNAME_RELEASE}
++	exit ;;
+     Power*:Rhapsody:*:*)
+ 	echo powerpc-apple-rhapsody${UNAME_RELEASE}
+ 	exit ;;
+@@ -1282,16 +1305,23 @@
+ 	    UNAME_PROCESSOR=powerpc
+ 	fi
+ 	if test `echo "$UNAME_RELEASE" | sed -e 's/\..*//'` -le 10 ; then
+-	    if [ "$CC_FOR_BUILD" != 'no_compiler_found' ]; then
++	    if [ "$CC_FOR_BUILD" != no_compiler_found ]; then
+ 		if (echo '#ifdef __LP64__'; echo IS_64BIT_ARCH; echo '#endif') | \
+-		    (CCOPTS= $CC_FOR_BUILD -E - 2>/dev/null) | \
+-		    grep IS_64BIT_ARCH >/dev/null
++		       (CCOPTS="" $CC_FOR_BUILD -E - 2>/dev/null) | \
++		       grep IS_64BIT_ARCH >/dev/null
+ 		then
+ 		    case $UNAME_PROCESSOR in
+ 			i386) UNAME_PROCESSOR=x86_64 ;;
+ 			powerpc) UNAME_PROCESSOR=powerpc64 ;;
+ 		    esac
+ 		fi
++		# On 10.4-10.6 one might compile for PowerPC via gcc -arch ppc
++		if (echo '#ifdef __POWERPC__'; echo IS_PPC; echo '#endif') | \
++		       (CCOPTS="" $CC_FOR_BUILD -E - 2>/dev/null) | \
++		       grep IS_PPC >/dev/null
++		then
++		    UNAME_PROCESSOR=powerpc
++		fi
+ 	    fi
+ 	elif test "$UNAME_PROCESSOR" = i386 ; then
+ 	    # Avoid executing cc on OS X 10.9, as it ships with a stub
+@@ -1306,7 +1336,7 @@
+ 	exit ;;
+     *:procnto*:*:* | *:QNX:[0123456789]*:*)
+ 	UNAME_PROCESSOR=`uname -p`
+-	if test "$UNAME_PROCESSOR" = "x86"; then
++	if test "$UNAME_PROCESSOR" = x86; then
+ 		UNAME_PROCESSOR=i386
+ 		UNAME_MACHINE=pc
+ 	fi
+@@ -1315,15 +1345,18 @@
+     *:QNX:*:4*)
+ 	echo i386-pc-qnx
+ 	exit ;;
+-    NEO-?:NONSTOP_KERNEL:*:*)
++    NEO-*:NONSTOP_KERNEL:*:*)
+ 	echo neo-tandem-nsk${UNAME_RELEASE}
+ 	exit ;;
+     NSE-*:NONSTOP_KERNEL:*:*)
+ 	echo nse-tandem-nsk${UNAME_RELEASE}
+ 	exit ;;
+-    NSR-?:NONSTOP_KERNEL:*:*)
++    NSR-*:NONSTOP_KERNEL:*:*)
+ 	echo nsr-tandem-nsk${UNAME_RELEASE}
+ 	exit ;;
++    NSX-*:NONSTOP_KERNEL:*:*)
++	echo nsx-tandem-nsk${UNAME_RELEASE}
++	exit ;;
+     *:NonStop-UX:*:*)
+ 	echo mips-compaq-nonstopux
+ 	exit ;;
+@@ -1337,7 +1370,7 @@
+ 	# "uname -m" is not consistent, so use $cputype instead. 386
+ 	# is converted to i386 for consistency with other x86
+ 	# operating systems.
+-	if test "$cputype" = "386"; then
++	if test "$cputype" = 386; then
+ 	    UNAME_MACHINE=i386
+ 	else
+ 	    UNAME_MACHINE="$cputype"
+@@ -1379,7 +1412,7 @@
+ 	echo i386-pc-xenix
+ 	exit ;;
+     i*86:skyos:*:*)
+-	echo ${UNAME_MACHINE}-pc-skyos`echo ${UNAME_RELEASE}` | sed -e 's/ .*$//'
++	echo ${UNAME_MACHINE}-pc-skyos`echo ${UNAME_RELEASE} | sed -e 's/ .*$//'`
+ 	exit ;;
+     i*86:rdos:*:*)
+ 	echo ${UNAME_MACHINE}-pc-rdos
+@@ -1390,23 +1423,25 @@
+     x86_64:VMkernel:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-esx
+ 	exit ;;
++    amd64:Isilon\ OneFS:*:*)
++	echo x86_64-unknown-onefs
++	exit ;;
+ esac
+ 
+ cat >&2 <<EOF
+ $0: unable to guess system type
+ 
+-This script, last modified $timestamp, has failed to recognize
+-the operating system you are using. It is advised that you
+-download the most up to date version of the config scripts from
++This script (version $timestamp), has failed to recognize the
++operating system you are using. If your script is old, overwrite *all*
++copies of config.guess and config.sub with the latest versions from:
+ 
+-  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD
++  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess
+ and
+-  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD
++  http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub
+ 
+-If the version you run ($0) is already up to date, please
+-send the following data and any information you think might be
+-pertinent to <config-patches@gnu.org> in order to provide the needed
+-information to handle your system.
++If $0 has already been updated, send the following data and any
++information you think might be pertinent to config-patches@gnu.org to
++provide the necessary information to handle your system.
+ 
+ config.guess timestamp = $timestamp
+ 
+diff -aur weston-3.0.0.orig/build-aux/config.sub weston-3.0.0.new/build-aux/config.sub
+--- weston-3.0.0.orig/build-aux/config.sub	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/config.sub	2018-05-23 20:34:47.487665742 -0400
+@@ -1,8 +1,8 @@
+ #! /bin/sh
+ # Configuration validation subroutine script.
+-#   Copyright 1992-2015 Free Software Foundation, Inc.
++#   Copyright 1992-2017 Free Software Foundation, Inc.
+ 
+-timestamp='2015-08-20'
++timestamp='2017-04-02'
+ 
+ # This file is free software; you can redistribute it and/or modify it
+ # under the terms of the GNU General Public License as published by
+@@ -33,7 +33,7 @@
+ # Otherwise, we print the canonical config type on stdout and succeed.
+ 
+ # You can get the latest version of this script from:
+-# http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD
++# http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub
+ 
+ # This file is supposed to be the same for all GNU packages
+ # and recognize all the CPU types, system types and aliases
+@@ -53,8 +53,7 @@
+ me=`echo "$0" | sed -e 's,.*/,,'`
+ 
+ usage="\
+-Usage: $0 [OPTION] CPU-MFR-OPSYS
+-       $0 [OPTION] ALIAS
++Usage: $0 [OPTION] CPU-MFR-OPSYS or ALIAS
+ 
+ Canonicalize a configuration name.
+ 
+@@ -68,7 +67,7 @@
+ version="\
+ GNU config.sub ($timestamp)
+ 
+-Copyright 1992-2015 Free Software Foundation, Inc.
++Copyright 1992-2017 Free Software Foundation, Inc.
+ 
+ This is free software; see the source for copying conditions.  There is NO
+ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+@@ -118,7 +117,7 @@
+   nto-qnx* | linux-gnu* | linux-android* | linux-dietlibc | linux-newlib* | \
+   linux-musl* | linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
+   knetbsd*-gnu* | netbsd*-gnu* | netbsd*-eabi* | \
+-  kopensolaris*-gnu* | \
++  kopensolaris*-gnu* | cloudabi*-eabi* | \
+   storm-chaos* | os2-emx* | rtmk-nova*)
+     os=-$maybe_os
+     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
+@@ -264,7 +263,7 @@
+ 	| fido | fr30 | frv | ft32 \
+ 	| h8300 | h8500 | hppa | hppa1.[01] | hppa2.0 | hppa2.0[nw] | hppa64 \
+ 	| hexagon \
+-	| i370 | i860 | i960 | ia64 \
++	| i370 | i860 | i960 | ia16 | ia64 \
+ 	| ip2k | iq2000 \
+ 	| k1om \
+ 	| le32 | le64 \
+@@ -302,6 +301,7 @@
+ 	| open8 | or1k | or1knd | or32 \
+ 	| pdp10 | pdp11 | pj | pjl \
+ 	| powerpc | powerpc64 | powerpc64le | powerpcle \
++	| pru \
+ 	| pyramid \
+ 	| riscv32 | riscv64 \
+ 	| rl78 | rx \
+@@ -315,6 +315,7 @@
+ 	| ubicom32 \
+ 	| v850 | v850e | v850e1 | v850e2 | v850es | v850e2v3 \
+ 	| visium \
++	| wasm32 \
+ 	| we32k \
+ 	| x86 | xc16x | xstormy16 | xtensa \
+ 	| z8k | z80)
+@@ -388,7 +389,7 @@
+ 	| h8300-* | h8500-* \
+ 	| hppa-* | hppa1.[01]-* | hppa2.0-* | hppa2.0[nw]-* | hppa64-* \
+ 	| hexagon-* \
+-	| i*86-* | i860-* | i960-* | ia64-* \
++	| i*86-* | i860-* | i960-* | ia16-* | ia64-* \
+ 	| ip2k-* | iq2000-* \
+ 	| k1om-* \
+ 	| le32-* | le64-* \
+@@ -429,6 +430,7 @@
+ 	| orion-* \
+ 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
+ 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
++	| pru-* \
+ 	| pyramid-* \
+ 	| riscv32-* | riscv64-* \
+ 	| rl78-* | romp-* | rs6000-* | rx-* \
+@@ -445,6 +447,7 @@
+ 	| v850-* | v850e-* | v850e1-* | v850es-* | v850e2-* | v850e2v3-* \
+ 	| vax-* \
+ 	| visium-* \
++	| wasm32-* \
+ 	| we32k-* \
+ 	| x86-* | x86_64-* | xc16x-* | xps100-* \
+ 	| xstormy16-* | xtensa*-* \
+@@ -521,7 +524,7 @@
+ 		basic_machine=i386-pc
+ 		os=-aros
+ 		;;
+-        asmjs)
++	asmjs)
+ 		basic_machine=asmjs-unknown
+ 		;;
+ 	aux)
+@@ -644,6 +647,14 @@
+ 		basic_machine=m68k-bull
+ 		os=-sysv3
+ 		;;
++	e500v[12])
++		basic_machine=powerpc-unknown
++		os=$os"spe"
++		;;
++	e500v[12]-*)
++		basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`
++		os=$os"spe"
++		;;
+ 	ebmon29k)
+ 		basic_machine=a29k-amd
+ 		os=-ebmon
+@@ -939,6 +950,9 @@
+ 	nsr-tandem)
+ 		basic_machine=nsr-tandem
+ 		;;
++	nsx-tandem)
++		basic_machine=nsx-tandem
++		;;
+ 	op50n-* | op60c-*)
+ 		basic_machine=hppa1.1-oki
+ 		os=-proelf
+@@ -1023,7 +1037,7 @@
+ 	ppc-* | ppcbe-*)
+ 		basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`
+ 		;;
+-	ppcle | powerpclittle | ppc-le | powerpc-little)
++	ppcle | powerpclittle)
+ 		basic_machine=powerpcle-unknown
+ 		;;
+ 	ppcle-* | powerpclittle-*)
+@@ -1031,9 +1045,9 @@
+ 		;;
+ 	ppc64)	basic_machine=powerpc64-unknown
+ 		;;
+-	ppc64-*) basic_machine=powerpc64-`echo $basic_machine | sed 's/^[^-]*-//'`
++	ppc64-* | ppc64p7-*) basic_machine=powerpc64-`echo $basic_machine | sed 's/^[^-]*-//'`
+ 		;;
+-	ppc64le | powerpc64little | ppc64-le | powerpc64-little)
++	ppc64le | powerpc64little)
+ 		basic_machine=powerpc64le-unknown
+ 		;;
+ 	ppc64le-* | powerpc64little-*)
+@@ -1234,6 +1248,9 @@
+ 		basic_machine=a29k-wrs
+ 		os=-vxworks
+ 		;;
++	wasm32)
++		basic_machine=wasm32-unknown
++		;;
+ 	w65*)
+ 		basic_machine=w65-wdc
+ 		os=-none
+@@ -1383,14 +1400,14 @@
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+ 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+ 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
+-	      | -bitrig* | -openbsd* | -solidbsd* \
++	      | -bitrig* | -openbsd* | -solidbsd* | -libertybsd* \
+ 	      | -ekkobsd* | -kfreebsd* | -freebsd* | -riscix* | -lynxos* \
+ 	      | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
+ 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
+ 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
+-	      | -chorusos* | -chorusrdb* | -cegcc* \
++	      | -chorusos* | -chorusrdb* | -cegcc* | -glidix* \
+ 	      | -cygwin* | -msys* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
+-	      | -mingw32* | -mingw64* | -linux-gnu* | -linux-android* \
++	      | -midipix* | -mingw32* | -mingw64* | -linux-gnu* | -linux-android* \
+ 	      | -linux-newlib* | -linux-musl* | -linux-uclibc* \
+ 	      | -uxpv* | -beos* | -mpeix* | -udk* | -moxiebox* \
+ 	      | -interix* | -uwin* | -mks* | -rhapsody* | -darwin* | -opened* \
+@@ -1399,7 +1416,8 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* \
++	      | -onefs* | -tirtos* | -phoenix* | -fuchsia* | -redox*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+@@ -1531,6 +1549,8 @@
+ 		;;
+ 	-nacl*)
+ 		;;
++	-ios)
++		;;
+ 	-none)
+ 		;;
+ 	*)
+@@ -1626,6 +1646,9 @@
+ 	sparc-* | *-sun)
+ 		os=-sunos4.1.1
+ 		;;
++	pru-*)
++		os=-elf
++		;;
+ 	*-be)
+ 		os=-beos
+ 		;;
+diff -aur weston-3.0.0.orig/build-aux/depcomp weston-3.0.0.new/build-aux/depcomp
+--- weston-3.0.0.orig/build-aux/depcomp	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/depcomp	2018-05-23 20:34:47.850658183 -0400
+@@ -1,9 +1,9 @@
+ #! /bin/sh
+ # depcomp - compile a program generating dependencies as side-effects
+ 
+-scriptversion=2013-05-30.07; # UTC
++scriptversion=2016-01-11.22; # UTC
+ 
+-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
++# Copyright (C) 1999-2017 Free Software Foundation, Inc.
+ 
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -786,6 +786,6 @@
+ # eval: (add-hook 'write-file-hooks 'time-stamp)
+ # time-stamp-start: "scriptversion="
+ # time-stamp-format: "%:y-%02m-%02d.%02H"
+-# time-stamp-time-zone: "UTC"
++# time-stamp-time-zone: "UTC0"
+ # time-stamp-end: "; # UTC"
+ # End:
+diff -aur weston-3.0.0.orig/build-aux/install-sh weston-3.0.0.new/build-aux/install-sh
+--- weston-3.0.0.orig/build-aux/install-sh	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/install-sh	2018-05-23 20:34:47.490665680 -0400
+@@ -1,7 +1,7 @@
+ #!/bin/sh
+ # install - install a program, script, or datafile
+ 
+-scriptversion=2014-09-12.12; # UTC
++scriptversion=2016-01-11.22; # UTC
+ 
+ # This originates from X11R5 (mit/util/scripts/install.sh), which was
+ # later released in X11R6 (xc/config/util/install.sh) with the
+@@ -324,41 +324,34 @@
+             # is incompatible with FreeBSD 'install' when (umask & 300) != 0.
+             ;;
+           *)
+-            # $RANDOM is not portable (e.g. dash);  use it when possible to
+-            # lower collision chance
+             tmpdir=${TMPDIR-/tmp}/ins$RANDOM-$$
+-            trap 'ret=$?; rmdir "$tmpdir/a/b" "$tmpdir/a" "$tmpdir" 2>/dev/null; exit $ret' 0
++            trap 'ret=$?; rmdir "$tmpdir/d" "$tmpdir" 2>/dev/null; exit $ret' 0
+ 
+-            # As "mkdir -p" follows symlinks and we work in /tmp possibly;  so
+-            # create the $tmpdir first (and fail if unsuccessful) to make sure
+-            # that nobody tries to guess the $tmpdir name.
+             if (umask $mkdir_umask &&
+-                $mkdirprog $mkdir_mode "$tmpdir" &&
+-                exec $mkdirprog $mkdir_mode -p -- "$tmpdir/a/b") >/dev/null 2>&1
++                exec $mkdirprog $mkdir_mode -p -- "$tmpdir/d") >/dev/null 2>&1
+             then
+               if test -z "$dir_arg" || {
+                    # Check for POSIX incompatibilities with -m.
+                    # HP-UX 11.23 and IRIX 6.5 mkdir -m -p sets group- or
+                    # other-writable bit of parent directory when it shouldn't.
+                    # FreeBSD 6.1 mkdir -m -p sets mode of existing directory.
+-                   test_tmpdir="$tmpdir/a"
+-                   ls_ld_tmpdir=`ls -ld "$test_tmpdir"`
++                   ls_ld_tmpdir=`ls -ld "$tmpdir"`
+                    case $ls_ld_tmpdir in
+                      d????-?r-*) different_mode=700;;
+                      d????-?--*) different_mode=755;;
+                      *) false;;
+                    esac &&
+-                   $mkdirprog -m$different_mode -p -- "$test_tmpdir" && {
+-                     ls_ld_tmpdir_1=`ls -ld "$test_tmpdir"`
++                   $mkdirprog -m$different_mode -p -- "$tmpdir" && {
++                     ls_ld_tmpdir_1=`ls -ld "$tmpdir"`
+                      test "$ls_ld_tmpdir" = "$ls_ld_tmpdir_1"
+                    }
+                  }
+               then posix_mkdir=:
+               fi
+-              rmdir "$tmpdir/a/b" "$tmpdir/a" "$tmpdir"
++              rmdir "$tmpdir/d" "$tmpdir"
+             else
+               # Remove any dirs left behind by ancient mkdir implementations.
+-              rmdir ./$mkdir_mode ./-p ./-- "$tmpdir" 2>/dev/null
++              rmdir ./$mkdir_mode ./-p ./-- 2>/dev/null
+             fi
+             trap '' 0;;
+         esac;;
+@@ -503,6 +496,6 @@
+ # eval: (add-hook 'write-file-hooks 'time-stamp)
+ # time-stamp-start: "scriptversion="
+ # time-stamp-format: "%:y-%02m-%02d.%02H"
+-# time-stamp-time-zone: "UTC"
++# time-stamp-time-zone: "UTC0"
+ # time-stamp-end: "; # UTC"
+ # End:
+diff -aur weston-3.0.0.orig/build-aux/ltmain.sh weston-3.0.0.new/build-aux/ltmain.sh
+--- weston-3.0.0.orig/build-aux/ltmain.sh	2017-08-08 14:57:07.000000000 -0400
++++ weston-3.0.0.new/build-aux/ltmain.sh	2018-05-23 20:34:34.886928031 -0400
+@@ -31,7 +31,7 @@
+ 
+ PROGRAM=libtool
+ PACKAGE=libtool
+-VERSION="2.4.6 Debian-2.4.6-0.1"
++VERSION=2.4.6
+ package_revision=2.4.6
+ 
+ 
+@@ -2073,7 +2073,7 @@
+        autoconf:       `($AUTOCONF --version) 2>/dev/null |$SED 1q`
+ 
+ Report bugs to <bug-libtool@gnu.org>.
+-GNU libtool home page: <http://www.gnu.org/s/libtool/>.
++GNU libtool home page: <http://www.gnu.org/software/libtool/>.
+ General help using GNU software: <http://www.gnu.org/gethelp/>."
+     exit 0
+ }
+@@ -7272,13 +7272,10 @@
+       # -tp=*                Portland pgcc target processor selection
+       # --sysroot=*          for sysroot support
+       # -O*, -g*, -flto*, -fwhopr*, -fuse-linker-plugin GCC link-time optimization
+-      # -specs=*             GCC specs files
+       # -stdlib=*            select c++ std lib with clang
+-      # -fsanitize=*         Clang/GCC memory and address sanitizer
+       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
+       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
+-      -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-stdlib=*| \
+-      -specs=*|-fsanitize=*)
++      -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-stdlib=*)
+         func_quote_for_eval "$arg"
+ 	arg=$func_quote_for_eval_result
+         func_append compile_command " $arg"
+@@ -7571,10 +7568,7 @@
+ 	case $pass in
+ 	dlopen) libs=$dlfiles ;;
+ 	dlpreopen) libs=$dlprefiles ;;
+-	link)
+-	  libs="$deplibs %DEPLIBS%"
+-	  test "X$link_all_deplibs" != Xno && libs="$libs $dependency_libs"
+-	  ;;
++	link) libs="$deplibs %DEPLIBS% $dependency_libs" ;;
+ 	esac
+       fi
+       if test lib,dlpreopen = "$linkmode,$pass"; then
+@@ -7893,19 +7887,19 @@
+ 	    # It is a libtool convenience library, so add in its objects.
+ 	    func_append convenience " $ladir/$objdir/$old_library"
+ 	    func_append old_convenience " $ladir/$objdir/$old_library"
+-	    tmp_libs=
+-	    for deplib in $dependency_libs; do
+-	      deplibs="$deplib $deplibs"
+-	      if $opt_preserve_dup_deps; then
+-		case "$tmp_libs " in
+-		*" $deplib "*) func_append specialdeplibs " $deplib" ;;
+-		esac
+-	      fi
+-	      func_append tmp_libs " $deplib"
+-	    done
+ 	  elif test prog != "$linkmode" && test lib != "$linkmode"; then
+ 	    func_fatal_error "'$lib' is not a convenience library"
+ 	  fi
++	  tmp_libs=
++	  for deplib in $dependency_libs; do
++	    deplibs="$deplib $deplibs"
++	    if $opt_preserve_dup_deps; then
++	      case "$tmp_libs " in
++	      *" $deplib "*) func_append specialdeplibs " $deplib" ;;
++	      esac
++	    fi
++	    func_append tmp_libs " $deplib"
++	  done
+ 	  continue
+ 	fi # $pass = conv
+ 
+@@ -8829,9 +8823,6 @@
+ 	    revision=$number_minor
+ 	    lt_irix_increment=no
+ 	    ;;
+-	  *)
+-	    func_fatal_configuration "$modename: unknown library version type '$version_type'"
+-	    ;;
+ 	  esac
+ 	  ;;
+ 	no)
+diff -aur weston-3.0.0.orig/build-aux/missing weston-3.0.0.new/build-aux/missing
+--- weston-3.0.0.orig/build-aux/missing	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/missing	2018-05-23 20:34:47.507665326 -0400
+@@ -1,9 +1,9 @@
+ #! /bin/sh
+ # Common wrapper for a few potentially missing GNU programs.
+ 
+-scriptversion=2013-10-28.13; # UTC
++scriptversion=2016-01-11.22; # UTC
+ 
+-# Copyright (C) 1996-2014 Free Software Foundation, Inc.
++# Copyright (C) 1996-2017 Free Software Foundation, Inc.
+ # Originally written by Fran,cois Pinard <pinard@iro.umontreal.ca>, 1996.
+ 
+ # This program is free software; you can redistribute it and/or modify
+@@ -210,6 +210,6 @@
+ # eval: (add-hook 'write-file-hooks 'time-stamp)
+ # time-stamp-start: "scriptversion="
+ # time-stamp-format: "%:y-%02m-%02d.%02H"
+-# time-stamp-time-zone: "UTC"
++# time-stamp-time-zone: "UTC0"
+ # time-stamp-end: "; # UTC"
+ # End:
+diff -aur weston-3.0.0.orig/build-aux/test-driver weston-3.0.0.new/build-aux/test-driver
+--- weston-3.0.0.orig/build-aux/test-driver	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/build-aux/test-driver	2018-05-23 20:34:48.570643188 -0400
+@@ -1,9 +1,9 @@
+ #! /bin/sh
+ # test-driver - basic testsuite driver script.
+ 
+-scriptversion=2013-07-13.22; # UTC
++scriptversion=2016-01-11.22; # UTC
+ 
+-# Copyright (C) 2011-2014 Free Software Foundation, Inc.
++# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+@@ -143,6 +143,6 @@
+ # eval: (add-hook 'write-file-hooks 'time-stamp)
+ # time-stamp-start: "scriptversion="
+ # time-stamp-format: "%:y-%02m-%02d.%02H"
+-# time-stamp-time-zone: "UTC"
++# time-stamp-time-zone: "UTC0"
+ # time-stamp-end: "; # UTC"
+ # End:
+Only in weston-3.0.0.new: config.h.in~
+diff -aur weston-3.0.0.orig/configure weston-3.0.0.new/configure
+--- weston-3.0.0.orig/configure	2017-08-08 14:57:10.000000000 -0400
++++ weston-3.0.0.new/configure	2018-05-23 20:34:45.576705536 -0400
+@@ -915,7 +915,6 @@
+ docdir
+ oldincludedir
+ includedir
+-runstatedir
+ localstatedir
+ sharedstatedir
+ sysconfdir
+@@ -1129,7 +1128,6 @@
+ sysconfdir='${prefix}/etc'
+ sharedstatedir='${prefix}/com'
+ localstatedir='${prefix}/var'
+-runstatedir='${localstatedir}/run'
+ includedir='${prefix}/include'
+ oldincludedir='/usr/include'
+ docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
+@@ -1382,15 +1380,6 @@
+   | -silent | --silent | --silen | --sile | --sil)
+     silent=yes ;;
+ 
+-  -runstatedir | --runstatedir | --runstatedi | --runstated \
+-  | --runstate | --runstat | --runsta | --runst | --runs \
+-  | --run | --ru | --r)
+-    ac_prev=runstatedir ;;
+-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+-  | --run=* | --ru=* | --r=*)
+-    runstatedir=$ac_optarg ;;
+-
+   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
+     ac_prev=sbindir ;;
+   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
+@@ -1528,7 +1517,7 @@
+ for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
+ 		datadir sysconfdir sharedstatedir localstatedir includedir \
+ 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
+-		libdir localedir mandir runstatedir
++		libdir localedir mandir
+ do
+   eval ac_val=\$$ac_var
+   # Remove trailing slashes.
+@@ -1681,7 +1670,6 @@
+   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+   --libdir=DIR            object code libraries [EPREFIX/lib]
+   --includedir=DIR        C header files [PREFIX/include]
+   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+@@ -4198,7 +4186,7 @@
+     We can't simply define LARGE_OFF_T to be 9223372036854775807,
+     since some C++ compilers masquerading as C compilers
+     incorrectly reject 9223372036854775807.  */
+-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
++#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+ 		       && LARGE_OFF_T % 2147483647 == 1)
+ 		      ? 1 : -1];
+@@ -4244,7 +4232,7 @@
+     We can't simply define LARGE_OFF_T to be 9223372036854775807,
+     since some C++ compilers masquerading as C compilers
+     incorrectly reject 9223372036854775807.  */
+-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
++#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+ 		       && LARGE_OFF_T % 2147483647 == 1)
+ 		      ? 1 : -1];
+@@ -4268,7 +4256,7 @@
+     We can't simply define LARGE_OFF_T to be 9223372036854775807,
+     since some C++ compilers masquerading as C compilers
+     incorrectly reject 9223372036854775807.  */
+-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
++#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+ 		       && LARGE_OFF_T % 2147483647 == 1)
+ 		      ? 1 : -1];
+@@ -4313,7 +4301,7 @@
+     We can't simply define LARGE_OFF_T to be 9223372036854775807,
+     since some C++ compilers masquerading as C compilers
+     incorrectly reject 9223372036854775807.  */
+-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
++#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+ 		       && LARGE_OFF_T % 2147483647 == 1)
+ 		      ? 1 : -1];
+@@ -4337,7 +4325,7 @@
+     We can't simply define LARGE_OFF_T to be 9223372036854775807,
+     since some C++ compilers masquerading as C compilers
+     incorrectly reject 9223372036854775807.  */
+-#define LARGE_OFF_T ((((off_t) 1 << 31) << 31) - 1 + (((off_t) 1 << 31) << 31))
++#define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
+   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
+ 		       && LARGE_OFF_T % 2147483647 == 1)
+ 		      ? 1 : -1];
+@@ -7037,7 +7025,7 @@
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+-netbsd* | netbsdelf*-gnu)
++netbsd*)
+   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
+     lt_cv_deplibs_check_method='match_pattern /lib[^/]+(\.so\.[0-9]+\.[0-9]+|_pic\.a)$'
+   else
+@@ -10461,9 +10449,6 @@
+   openbsd* | bitrig*)
+     with_gnu_ld=no
+     ;;
+-  linux* | k*bsd*-gnu | gnu*)
+-    link_all_deplibs=no
+-    ;;
+   esac
+ 
+   ld_shlibs=yes
+@@ -10718,7 +10703,7 @@
+       fi
+       ;;
+ 
+-    netbsd* | netbsdelf*-gnu)
++    netbsd*)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	archive_cmds='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
+ 	wlarc=
+@@ -11388,7 +11373,6 @@
+ 	if test yes = "$lt_cv_irix_exported_symbol"; then
+           archive_expsym_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname `test -n "$verstring" && func_echo_all "$wl-set_version $wl$verstring"` $wl-update_registry $wl$output_objdir/so_locations $wl-exports_file $wl$export_symbols -o $lib'
+ 	fi
+-	link_all_deplibs=no
+       else
+ 	archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -o $lib'
+ 	archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -exports_file $export_symbols -o $lib'
+@@ -11410,7 +11394,7 @@
+       esac
+       ;;
+ 
+-    netbsd* | netbsdelf*-gnu)
++    netbsd*)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
+       else
+@@ -12505,6 +12489,9 @@
+   # before this can be enabled.
+   hardcode_into_libs=yes
+ 
++  # Add ABI-specific directories to the system library path.
++  sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib"
++
+   # Ideally, we could use ldconfig to report *all* directores which are
+   # searched for libraries, however this is still not possible.  Aside from not
+   # being certain /sbin/ldconfig is available, command
+@@ -12513,7 +12500,7 @@
+   # appending ld.so.conf contents (and includes) to the search path.
+   if test -f /etc/ld.so.conf; then
+     lt_ld_extra=`awk '/^include / { system(sprintf("cd /etc; cat %s 2>/dev/null", \$2)); skip = 1; } { if (!skip) print \$0; skip = 0; }' < /etc/ld.so.conf | $SED -e 's/#.*//;/^[	 ]*hwcap[	 ]/d;s/[:,	]/ /g;s/=[^=]*$//;s/=[^= ]* / /g;s/"//g;/^$/d' | tr '\n' ' '`
+-    sys_lib_dlsearch_path_spec="/lib /usr/lib $lt_ld_extra"
++    sys_lib_dlsearch_path_spec="$sys_lib_dlsearch_path_spec $lt_ld_extra"
+   fi
+ 
+   # We used to test for /lib/ld.so.1 and disable shared libraries on
+@@ -12525,18 +12512,6 @@
+   dynamic_linker='GNU/Linux ld.so'
+   ;;
+ 
+-netbsdelf*-gnu)
+-  version_type=linux
+-  need_lib_prefix=no
+-  need_version=no
+-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+-  soname_spec='${libname}${release}${shared_ext}$major'
+-  shlibpath_var=LD_LIBRARY_PATH
+-  shlibpath_overrides_runpath=no
+-  hardcode_into_libs=yes
+-  dynamic_linker='NetBSD ld.elf_so'
+-  ;;
+-
+ netbsd*)
+   version_type=sunos
+   need_lib_prefix=no
+diff -aur weston-3.0.0.orig/m4/libtool.m4 weston-3.0.0.new/m4/libtool.m4
+--- weston-3.0.0.orig/m4/libtool.m4	2017-08-08 14:57:07.000000000 -0400
++++ weston-3.0.0.new/m4/libtool.m4	2018-05-23 20:34:34.958926533 -0400
+@@ -2867,6 +2867,9 @@
+   # before this can be enabled.
+   hardcode_into_libs=yes
+ 
++  # Add ABI-specific directories to the system library path.
++  sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib"
++
+   # Ideally, we could use ldconfig to report *all* directores which are
+   # searched for libraries, however this is still not possible.  Aside from not
+   # being certain /sbin/ldconfig is available, command
+@@ -2875,7 +2878,7 @@
+   # appending ld.so.conf contents (and includes) to the search path.
+   if test -f /etc/ld.so.conf; then
+     lt_ld_extra=`awk '/^include / { system(sprintf("cd /etc; cat %s 2>/dev/null", \[$]2)); skip = 1; } { if (!skip) print \[$]0; skip = 0; }' < /etc/ld.so.conf | $SED -e 's/#.*//;/^[	 ]*hwcap[	 ]/d;s/[:,	]/ /g;s/=[^=]*$//;s/=[^= ]* / /g;s/"//g;/^$/d' | tr '\n' ' '`
+-    sys_lib_dlsearch_path_spec="/lib /usr/lib $lt_ld_extra"
++    sys_lib_dlsearch_path_spec="$sys_lib_dlsearch_path_spec $lt_ld_extra"
+   fi
+ 
+   # We used to test for /lib/ld.so.1 and disable shared libraries on
+@@ -2887,18 +2890,6 @@
+   dynamic_linker='GNU/Linux ld.so'
+   ;;
+ 
+-netbsdelf*-gnu)
+-  version_type=linux
+-  need_lib_prefix=no
+-  need_version=no
+-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+-  soname_spec='${libname}${release}${shared_ext}$major'
+-  shlibpath_var=LD_LIBRARY_PATH
+-  shlibpath_overrides_runpath=no
+-  hardcode_into_libs=yes
+-  dynamic_linker='NetBSD ld.elf_so'
+-  ;;
+-
+ netbsd*)
+   version_type=sunos
+   need_lib_prefix=no
+@@ -3558,7 +3549,7 @@
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+-netbsd* | netbsdelf*-gnu)
++netbsd*)
+   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
+     lt_cv_deplibs_check_method='match_pattern /lib[[^/]]+(\.so\.[[0-9]]+\.[[0-9]]+|_pic\.a)$'
+   else
+@@ -4436,7 +4427,7 @@
+ 	    ;;
+ 	esac
+ 	;;
+-      netbsd* | netbsdelf*-gnu)
++      netbsd*)
+ 	;;
+       *qnx* | *nto*)
+         # QNX uses GNU C++, but need to define -shared option too, otherwise
+@@ -4948,9 +4939,6 @@
+       ;;
+     esac
+     ;;
+-  linux* | k*bsd*-gnu | gnu*)
+-    _LT_TAGVAR(link_all_deplibs, $1)=no
+-    ;;
+   *)
+     _LT_TAGVAR(export_symbols_cmds, $1)='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
+     ;;
+@@ -5013,9 +5001,6 @@
+   openbsd* | bitrig*)
+     with_gnu_ld=no
+     ;;
+-  linux* | k*bsd*-gnu | gnu*)
+-    _LT_TAGVAR(link_all_deplibs, $1)=no
+-    ;;
+   esac
+ 
+   _LT_TAGVAR(ld_shlibs, $1)=yes
+@@ -5270,7 +5255,7 @@
+       fi
+       ;;
+ 
+-    netbsd* | netbsdelf*-gnu)
++    netbsd*)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
+ 	wlarc=
+@@ -5791,7 +5776,6 @@
+ 	if test yes = "$lt_cv_irix_exported_symbol"; then
+           _LT_TAGVAR(archive_expsym_cmds, $1)='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname `test -n "$verstring" && func_echo_all "$wl-set_version $wl$verstring"` $wl-update_registry $wl$output_objdir/so_locations $wl-exports_file $wl$export_symbols -o $lib'
+ 	fi
+-	_LT_TAGVAR(link_all_deplibs, $1)=no
+       else
+ 	_LT_TAGVAR(archive_cmds, $1)='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -o $lib'
+ 	_LT_TAGVAR(archive_expsym_cmds, $1)='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -exports_file $export_symbols -o $lib'
+@@ -5813,7 +5797,7 @@
+       esac
+       ;;
+ 
+-    netbsd* | netbsdelf*-gnu)
++    netbsd*)
+       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
+ 	_LT_TAGVAR(archive_cmds, $1)='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
+       else
+diff -aur weston-3.0.0.orig/Makefile.am weston-3.0.0.new/Makefile.am
+--- weston-3.0.0.orig/Makefile.am	2017-08-08 14:57:02.000000000 -0400
++++ weston-3.0.0.new/Makefile.am	2018-05-23 20:34:03.803573871 -0400
+@@ -196,7 +196,7 @@
+ 	$(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+ 	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
+ 	$(CLOCK_GETRES_LIBS) \
+-	-lm
++	-lm -lpthread
+ 
+ weston_SOURCES = 					\
+ 	compositor/main.c				\
+diff -aur weston-3.0.0.orig/Makefile.in weston-3.0.0.new/Makefile.in
+--- weston-3.0.0.orig/Makefile.in	2017-08-08 14:57:11.000000000 -0400
++++ weston-3.0.0.new/Makefile.in	2018-05-23 20:34:48.681640876 -0400
+@@ -1,7 +1,7 @@
+-# Makefile.in generated by automake 1.15 from Makefile.am.
++# Makefile.in generated by automake 1.15.1 from Makefile.am.
+ # @configure_input@
+ 
+-# Copyright (C) 1994-2014 Free Software Foundation, Inc.
++# Copyright (C) 1994-2017 Free Software Foundation, Inc.
+ 
+ # This Makefile.in is free software; the Free Software Foundation
+ # gives unlimited permission to copy and/or distribute it,
+@@ -2102,7 +2102,6 @@
+ prefix = @prefix@
+ program_transform_name = @program_transform_name@
+ psdir = @psdir@
+-runstatedir = @runstatedir@
+ sbindir = @sbindir@
+ sharedstatedir = @sharedstatedir@
+ srcdir = @srcdir@
+@@ -2313,7 +2312,7 @@
+ 	$(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+ 	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
+ 	$(CLOCK_GETRES_LIBS) \
+-	-lm
++	-lm -lpthread
+ 
+ weston_SOURCES = \
+ 	compositor/main.c				\
+@@ -7552,7 +7551,7 @@
+ 	  ! -type d ! -perm -444 -exec $(install_sh) -c -m a+r {} {} \; \
+ 	|| chmod -R a+r "$(distdir)"
+ dist-gzip: distdir
+-	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
++	tardir=$(distdir) && $(am__tar) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).tar.gz
+ 	$(am__post_remove_distdir)
+ 
+ dist-bzip2: distdir
+@@ -7577,7 +7576,7 @@
+ 	@echo WARNING: "Support for shar distribution archives is" \
+ 	               "deprecated." >&2
+ 	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
+-	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
++	shar $(distdir) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).shar.gz
+ 	$(am__post_remove_distdir)
+ 
+ dist-zip: distdir
+@@ -7595,7 +7594,7 @@
+ distcheck: dist
+ 	case '$(DIST_ARCHIVES)' in \
+ 	*.tar.gz*) \
+-	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).tar.gz | $(am__untar) ;;\
++	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).tar.gz | $(am__untar) ;;\
+ 	*.tar.bz2*) \
+ 	  bzip2 -dc $(distdir).tar.bz2 | $(am__untar) ;;\
+ 	*.tar.lz*) \
+@@ -7605,7 +7604,7 @@
+ 	*.tar.Z*) \
+ 	  uncompress -c $(distdir).tar.Z | $(am__untar) ;;\
+ 	*.shar.gz*) \
+-	  GZIP=$(GZIP_ENV) gzip -dc $(distdir).shar.gz | unshar ;;\
++	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).shar.gz | unshar ;;\
+ 	*.zip*) \
+ 	  unzip $(distdir).zip ;;\
+ 	esac
