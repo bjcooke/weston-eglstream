@@ -1,9 +1,9 @@
 diff --git a/compositor/main.c b/compositor/main.c
-index f8a60e97..e703dc19 100644
+index 1e827884..2f6e9d0b 100644
 --- a/compositor/main.c
 +++ b/compositor/main.c
-@@ -662,6 +662,16 @@ on_caught_signal(int s, siginfo_t *siginfo, void *context)
- 	raise(SIGTRAP);
+@@ -560,6 +560,16 @@ static int on_term_signal(int signal_number, void *data)
+ 	return 1;
  }
  
 +static void
@@ -16,10 +16,10 @@ index f8a60e97..e703dc19 100644
 +	pthread_sigmask( SIG_BLOCK, &ss, NULL );
 +}
 +
- static void
- catch_signals(void)
+ static const char *
+ clock_name(clockid_t clk_id)
  {
-@@ -1879,6 +1889,17 @@ int main(int argc, char *argv[])
+@@ -1781,6 +1791,17 @@ int main(int argc, char *argv[])
  				       &require_input, true);
  	ec->require_input = require_input;
  

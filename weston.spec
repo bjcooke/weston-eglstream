@@ -1,32 +1,34 @@
-%global apiver 3
+%global apiver 4
+%global gitbranch 4.0
+%global commit e5f33d0112e98fe0ed2cd853807cd200d4824c31
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           weston-eglstream
-Version:        3.0.0
-Release:        6%{?dist}
+Version:        4.0.0
+Release:        1%{?dist}
 Summary:        Reference compositor for Wayland.
 
 License:        BSD and CC-BY-SA
 URL:            http://wayland.freedesktop.org/
-Source0:        http://wayland.freedesktop.org/releases/weston-%{version}.tar.xz
+Source0:        https://github.com/wayland-project/weston/archive/%{gitbranch}/weston-%{shortcommit}.tar.gz
 
 # Provided by https://aur.archlinux.org/weston-eglstream.git
-Patch0:         0001-compositor-drm-Release-current-next-fb-when-deactiva.patch
-Patch1:         0002-gl-renderer-Add-EGLDevice-enumeration-support.patch
-Patch2:         0003-gl-renderer-Add-support-for-EGLDevice-composited-fra.patch
-Patch3:         0004-gl-renderer-Add-EGL-client-support-for-EGLStream-fra.patch
-Patch4:         0005-compositor-drm-Gracefully-handle-vblank-and-flip-inv.patch
-Patch5:         0006-compositor-drm-Add-support-for-EGLDevice-EGLOutput.patch
-Patch6:         0007-simple-egl-Do-not-set-EGL-up-until-XDG-setup-is-comp.patch
-Patch7:         0008-compositor-Process-stream-attach-requests-with-wl_eg.patch
-Patch8:         0009-Add-nvidia-release-notes-file.patch
-Patch9:         weston-3.0.0-sigusr1-handle.patch
-Patch10:        weston-3.0.0-link-posix-threads.patch
+Patch1:         0001-gl-renderer-Add-EGLDevice-enumeration-support.patch
+Patch2:         0002-gl-renderer-Add-support-for-EGLDevice-composited-fra.patch
+Patch3:         0003-gl-renderer-Add-EGL-client-support-for-EGLStream-fra.patch
+Patch4:         0004-compositor-drm-Gracefully-handle-vblank-and-flip-inv.patch
+Patch5:         0005-compositor-drm-Add-support-for-EGLDevice-EGLOutput.patch
+Patch6:         0006-simple-egl-Do-not-set-EGL-up-until-XDG-setup-is-comp.patch
+Patch7:         0007-compositor-Process-stream-attach-requests-with-wl_eg.patch
+Patch8:         0008-Add-nvidia-release-notes-file.patch
+Patch9:         weston-4.0.0-sigusr1-handle.patch
+Patch10:        weston-4.0.0-link-posix-threads.patch
 
 
 Conflicts:      weston
 
-BuildRequires:	automake
-BuildRequires:  egl-wayland
+BuildRequires:	libtool
+BuildRequires:  egl-wayland-devel
 BuildRequires:  eglexternalplatform-devel
 BuildRequires:  glib2-devel
 BuildRequires:  libjpeg-turbo-devel
@@ -101,7 +103,8 @@ Requires:       weston-eglstream-libs%{?_isa} = %{version}-%{release}
 Common headers for weston
 
 %prep
-%autosetup -p1 -n weston-%{version}
+%autosetup -p1 -n weston-%{gitbranch}
+NOCONFIGURE=1 ./autogen.sh
 
 %build
 %configure \
@@ -172,6 +175,9 @@ find %{buildroot} -name \*.la -delete
 %{_libdir}/libweston-desktop-%{apiver}.so
 
 %changelog
+* Mon Jun 25 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 4.0.0-1
+- Update to 4.0.0-1
+
 * Mon May 07 2018 Benjamin Cooke <bcooke@freedomofknowledge.org> - 3.0.0-6
 - Provide better handling of sigusr1
 
